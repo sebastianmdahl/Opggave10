@@ -7,6 +7,10 @@ import "ol/ol.css";
 import Map from "ol/Map.js";
 import View from "ol/View.js";
 import { FeedMessage } from "../../../generated/gtfs-realtime";
+import { Feature } from "ol";
+import { Point } from "ol/geom";
+import VectorLayer from "ol/layer/Vector";
+import VectorSource from "ol/source/Vector";
 
 useGeographic();
 
@@ -18,8 +22,10 @@ const backgroundLayer = new MapboxVectorLayer({
 
 // Here we create a Map object. Make sure you `import { Map } from "ol"`. Otherwise, the standard Javascript
 //  map data structure will be used
+const vehicleLayer = new VectorLayer({});
+
 const map = new Map({
-  layers: [backgroundLayer],
+  layers: [backgroundLayer, vehicleLayer],
   view: new View({ center: [10.9, 59.9], zoom: 10 }),
   // map tile images will be from the Open Street Map (OSM) tile layer
 });
@@ -30,18 +36,26 @@ export function Application() {
     map.setTarget(mapRef.current!);
   }, []);
 
-  async function loadTranstitFeed() {
+  async function loadTransitFeed() {
     const res = await fetch(
       "https://api.entur.io/realtime/v1/gtfs-rt/vehicle-positions",
     );
     const messages = FeedMessage.decode(
       new Uint8Array(await res.arrayBuffer()),
     );
-    console.log(messages);
+    const features = messages.entity.map((entity) => {
+      const position = entity.vehicle?.position!;
+      const { latitude, longitude } = position;
+      return new Feature({
+        geometry: new Point([longitude, latitude]),
+      });
+    });
+    console.log(features);
+    vehicleLayer.setSource(new VectorSource({ features }));
   }
 
   useEffect(() => {
-    loadTranstitFeed();
+    loadTransitFeed();
   }, []);
 
   return <div ref={mapRef}></div>;
