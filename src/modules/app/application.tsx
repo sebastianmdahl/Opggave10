@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-
+import "./application.css";
 import { useGeographic } from "ol/proj";
 import { MapboxVectorLayer } from "ol-mapbox-style";
 
@@ -38,7 +38,9 @@ const map = new Map({
   view: new View({ center: [10.9, 59.9], zoom: 10 }),
   // map tile images will be from the Open Street Map (OSM) tile layer
 });
-const overlay = new Overlay({});
+const overlay = new Overlay({
+  positioning: "top-center",
+});
 
 export function Application() {
   const mapRef = useRef<HTMLDivElement | null>(null);
