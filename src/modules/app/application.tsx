@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./application.css";
 import { useGeographic } from "ol/proj";
 import { MapboxVectorLayer } from "ol-mapbox-style";
@@ -42,15 +42,33 @@ const overlay = new Overlay({
   positioning: "top-center",
 });
 
+function SelectedFeaturesOverlay({ features }: { features: Feature[] }) {
+  return (
+    <>
+      Clicked on {features.length} features
+      <pre>
+        {JSON.stringify(
+          features.map((f) => f.getProperties()),
+          null,
+          2,
+        )}
+      </pre>
+    </>
+  );
+}
+
 export function Application() {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const overlayRef = useRef<HTMLDivElement | null>(null);
+  const [selectedFeatures, setSelectedFeatures] = useState<Feature[]>([]);
   useEffect(() => {
     map.setTarget(mapRef.current!);
     overlay.setElement(overlayRef.current!);
     map.addOverlay(overlay);
     map.on("click", (e) => {
       overlay.setPosition(e.coordinate);
+      const selectedFeatures = map.getFeaturesAtPixel(e.pixel);
+      setSelectedFeatures(selectedFeatures as Feature[]);
     });
   }, []);
 
@@ -66,6 +84,7 @@ export function Application() {
       const { latitude, longitude } = position;
       return new Feature({
         geometry: new Point([longitude, latitude]),
+        properties: entity!.vehicle,
       });
     });
     console.log(features);
@@ -78,7 +97,9 @@ export function Application() {
 
   return (
     <div ref={mapRef}>
-      <div ref={overlayRef}> Here is the clicked overlay</div>
+      <div ref={overlayRef}>
+        <SelectedFeaturesOverlay features={selectedFeatures} />
+      </div>
     </div>
   );
 }
