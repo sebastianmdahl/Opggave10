@@ -7,7 +7,7 @@ import "ol/ol.css";
 import Map from "ol/Map.js";
 import View from "ol/View.js";
 import { FeedMessage } from "../../../generated/gtfs-realtime";
-import { Feature } from "ol";
+import { Feature, Overlay } from "ol";
 import { Point } from "ol/geom";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
@@ -38,11 +38,18 @@ const map = new Map({
   view: new View({ center: [10.9, 59.9], zoom: 10 }),
   // map tile images will be from the Open Street Map (OSM) tile layer
 });
+const overlay = new Overlay({});
 
 export function Application() {
   const mapRef = useRef<HTMLDivElement | null>(null);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     map.setTarget(mapRef.current!);
+    overlay.setElement(overlayRef.current!);
+    map.addOverlay(overlay);
+    map.on("click", (e) => {
+      overlay.setPosition(e.coordinate);
+    });
   }, []);
 
   async function loadTransitFeed() {
@@ -67,5 +74,9 @@ export function Application() {
     loadTransitFeed();
   }, []);
 
-  return <div ref={mapRef}></div>;
+  return (
+    <div ref={mapRef}>
+      <div ref={overlayRef}> Here is the clicked overlay</div>
+    </div>
+  );
 }
