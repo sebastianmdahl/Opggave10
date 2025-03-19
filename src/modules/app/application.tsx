@@ -11,6 +11,7 @@ import { Feature } from "ol";
 import { Point } from "ol/geom";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
+import { Style, Circle, Fill, Stroke } from "ol/style";
 
 useGeographic();
 
@@ -22,7 +23,15 @@ const backgroundLayer = new MapboxVectorLayer({
 
 // Here we create a Map object. Make sure you `import { Map } from "ol"`. Otherwise, the standard Javascript
 //  map data structure will be used
-const vehicleLayer = new VectorLayer({});
+const vehicleLayer = new VectorLayer({
+  style: new Style({
+    image: new Circle({
+      radius: 8,
+      fill: new Fill({ color: "blue" }),
+      stroke: new Stroke({ color: "white", width: 2 }),
+    }),
+  }),
+});
 
 const map = new Map({
   layers: [backgroundLayer, vehicleLayer],
